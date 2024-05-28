@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>etcd Key-Value Pairs</title>
+    <style>
+        ul { display: none; }
+        li:has(ul):before { content: '+'; }
+        li[data-open='true']:has(ul):before { content: '-'; }
+        li[data-open='true'] > ul { display: block; }
+    </style>
+    <script>
+        function toggleChildren(event, value) {
+            event.preventDefault();
+            var item = event.target.parentNode;
+            if (item.getAttribute('data-open') === 'true') {
+                item.setAttribute('data-open', 'false');
+            } else {
+                item.setAttribute('data-open', 'true');
+                if (!item.getAttribute('data-value-shown')) {
+                    alert(value);
+                    item.setAttribute('data-value-shown', 'true');
+                }
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>etcd Key-Value Pairs</h1>
+    <ul id="keyList">
+    </ul>
+    <script>
+        var data = {{ data | tojson }};
+        var keyList = document.getElementById('keyList');
+        for (var key in data) {
+            var parts = key.split('/');
+            var currentLevel = keyList;
+            for (var i = 0; i < parts.length; i++) {
+                var existingItem = currentLevel.querySelector('li[data-key="' + parts[i] + '"]');
+                if (existingItem) {
+                    currentLevel = existingItem.querySelector('ul');
+                } else {
+                    var newItem = document.createElement('li');
+                    newItem.setAttribute('data-key', parts[i]);
+                    newItem.innerHTML = '<a href="#" onclick="toggleChildren(event, \'' + data[key] + '\')">' + parts[i] + '</a>';
+                    currentLevel.appendChild(newItem);
+                    if (i < parts.length - 1) {
+                        var newList = document.createElement('ul');
+                        newList.style.display = 'none';
+                        newItem.appendChild(newList);
+                        currentLevel = newList;
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+</html>
