@@ -13,12 +13,6 @@
         .green {
             background-color: green;
         }
-        .yellow {
-            background-color: yellow;
-        }
-        .red {
-            background-color: red;
-        }
     </style>
 </head>
 <body>
@@ -26,8 +20,21 @@
     <ul>
         {% for key, value in data.items() %}
             <li>
-                <span class="status {{ value }}"></span>
-                {{ key }}
+                {{ key }}: 
+                {% if value is mapping %}
+                    <ul>
+                    {% for sub_key, sub_value in value.items() %}
+                        <li>
+                            {% if sub_key in statuses and statuses[sub_key] == 'green' %}
+                                <span class="status green"></span>
+                            {% endif %}
+                            {{ sub_key }}: {{ sub_value }}
+                        </li>
+                    {% endfor %}
+                    </ul>
+                {% else %}
+                    {{ value }}
+                {% endif %}
             </li>
         {% endfor %}
     </ul>
