@@ -1,25 +1,9 @@
-from flask import Flask, render_template
+from flask import Flask, render_template_string
+from json2html import *
 import etcd3
 import json
 
 app = Flask(__name__)
-
-def get_status(data):
-    filestatusToken = "FileStatus"
-    successfulltoken = "SuccessfullyTransfered"
-    checksomeDifferenttoken = "CheckSumDifferent"
-    filesizeToken = "FileSizeDifferent"
-    for key, value in data.items():
-        if isinstance(value, dict):
-            return get_status(value)
-        elif key == filestatusToken:
-            if value == successfulltoken:
-                return 'green'
-            elif value == checksomeDifferenttoken or value == filesizeToken:
-                return 'yellow'
-            else:
-                return 'red'
-    return 'red'
 
 @app.route('/etcd', methods=['GET'])
 def get_etcd_data():
@@ -30,8 +14,9 @@ def get_etcd_data():
     for value, metadata in etcd.get_all():
         key = metadata.key.decode('utf-8')
         value = json.loads(value.decode('utf-8'))
-        all_data[key] = get_status(value)
-    return render_template('index.html', data=all_data)
+        all_data[key] = value
+    html = json2html.convert(json = all_data)
+    return render_template_string('<html><body>{}</body></html>'.format(html))
 
 if __name__ == '__main__':
     app.run(debug=True)
